@@ -34,12 +34,12 @@
     todos.observe((event) => {
        console.log("todos",todos.toJSON());
 
-      // liste.innerHTML = "";
-      // for (const element of yarray.toArray()) {
-      //   let ligne = document.createElement("li")
-      //   ligne.innerHTML = element;
-      //   liste.append(ligne);
-      // }
+      liste.innerHTML = "";
+      for (const element of Array.from(todos.values())) {
+        let ligne = document.createElement("li")
+        ligne.innerHTML = JSON.stringify(element);
+        liste.append(ligne);
+      }
     });
     doing.observe((event) => {
        console.log("doing",doing.toJSON());
