@@ -2,16 +2,18 @@
   <body>
     <div id="status"></div>
     <input placeholder="texte à ajouter" id="input" />
-    <button id="button">Ajouter</button>
+    <button id="button">Ajouter</button> <button id="clean">!!! Clean all </button>
     <ul id="liste"></ul>
   </body>
 
   <script type="module">
     import * as Y from "https://cdn.jsdelivr.net/npm/yjs@13.6.14/+esm";
     import { WebsocketProvider } from "https://cdn.jsdelivr.net/npm/y-websocket@2.0.0/+esm";
+    import { v4 as uuidv4 } from 'https://cdn.jsdelivr.net/npm/uuid@9.0.1/+esm'
 
     const doc = new Y.Doc();
     const liste = document.getElementById("liste");
+    const my_id = uuidv4();
 
     const wsProvider = new WebsocketProvider(
       "ws://localhost:1234",
@@ -25,24 +27,53 @@
       document.getElementById("status").innerHTML = event.status;
     });
 
-    const yarray = doc.getArray("my-array");
-    yarray.observe((event) => {
-       console.log(yarray.toArray());
+    const todos = doc.getMap('todos')
+    const doing = doc.getMap('doing')
+    const done = doc.getMap('done')
+    
+    todos.observe((event) => {
+       console.log(todos.toJSON());
 
-      liste.innerHTML = "";
-      for (const element of yarray.toArray()) {
-        let ligne = document.createElement("li")
-        ligne.innerHTML = element;
-        liste.append(ligne);
-      }
+      // liste.innerHTML = "";
+      // for (const element of yarray.toArray()) {
+      //   let ligne = document.createElement("li")
+      //   ligne.innerHTML = element;
+      //   liste.append(ligne);
+      // }
     });
-    // every time a local or remote client modifies yarray, the observer is called
-    yarray.insert(0, ["val"]); // => "yarray was modified"
+    doing.observe((event) => {
+       console.log("doing",doing.toJSON());
+    });
 
+    done.observe((event) => {
+       console.log("done",done.toJSON());
+    });
     function addText() {
       const text = document.getElementById("input").value;
-      yarray.insert(0, [text]);
+      const id = uuidv4(); 
+      console.log(id)
+      const task = {  
+        id: id,
+        text: text,
+        asker: my_id,
+        created: Date.now()
+      }
+      console.log(task)
+      todos.set(id, task)
+    }
+
+    function clean() {
+      for (const key of todos.keys()) {
+      todos.delete(key)
+    }
+      for (const key of doing.keys()) {
+      doing.delete(key)
+    }
+      for (const key of done.keys()) {
+      done.delete(key)
+    }
     }
     document.getElementById("button").addEventListener("click", addText);
+    document.getElementById("clean").addEventListener("click", clean);
   </script>
 </html>
